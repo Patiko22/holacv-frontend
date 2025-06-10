@@ -43,6 +43,8 @@ export default function RegistroPersona() {
       console.warn("⚠️ Google Identity Services aún no cargado.");
     }
   }, []);
+  
+  console.log("Payload enviado al backend:", payload);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-muted">
