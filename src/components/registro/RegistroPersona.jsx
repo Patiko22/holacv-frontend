@@ -7,27 +7,29 @@ export default function RegistroPersona() {
     try {
       const jwt = response.credential;
       const decoded = JSON.parse(atob(jwt.split(".")[1]));
-
+  
       const uid = decoded.sub;
       const nombre = decoded.given_name || decoded.name || "Usuario";
       const email = decoded.email;
-
+  
       const payload = {
         uid,
         nombre,
         email,
         tipoUsuario: "persona"
       };
-
+  
+      console.log("Payload enviado al backend:", payload); // <-- movido aquí correctamente
+  
       await axios.post("https://holacv-backend.onrender.com/configurar-bot", payload);
-
+  
       localStorage.setItem("uid", uid);
       window.location.href = "/guia";
     } catch (error) {
       console.error("❌ Error al registrar usuario:", error);
     }
   };
-
+ 
   useEffect(() => {
     if (window.google && window.google.accounts) {
       window.google.accounts.id.initialize({
@@ -43,8 +45,6 @@ export default function RegistroPersona() {
       console.warn("⚠️ Google Identity Services aún no cargado.");
     }
   }, []);
-  
-  console.log("Payload enviado al backend:", payload);
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center bg-muted">
