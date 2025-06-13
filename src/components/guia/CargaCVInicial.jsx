@@ -3,6 +3,8 @@ import axios from "axios";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
+const BASE_URL = "https://holacv-backend.onrender.com";
+
 export default function CargaCVInicial({ onFinalizar }) {
   const [cvCargado, setCvCargado] = useState(false);
   const [linkedin, setLinkedin] = useState("");
@@ -11,7 +13,7 @@ export default function CargaCVInicial({ onFinalizar }) {
   const uid = "usuario124";
 
   useEffect(() => {
-    axios.get(`http://localhost:3000/data/${uid}/${uid}_config.json`)
+    axios.get(`${BASE_URL}/data/${uid}/${uid}_config.json`)
       .then(() => setCvCargado(true))
       .catch(() => setCvCargado(false));
   }, []);
@@ -20,7 +22,7 @@ export default function CargaCVInicial({ onFinalizar }) {
     if (!linkedin.trim()) return;
 
     try {
-      await axios.post("http://localhost:3000/subir-experiencia", {
+      await axios.post(`${BASE_URL}/subir-experiencia`, {
         uid,
         textoExtraido: `LinkedIn: ${linkedin}`
       });
@@ -39,7 +41,7 @@ export default function CargaCVInicial({ onFinalizar }) {
       formData.append("cv", pdf);
       formData.append("uid", uid);
 
-      await axios.post("http://localhost:3000/subir-experiencia", formData, {
+      await axios.post(`${BASE_URL}/subir-experiencia`, formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
 

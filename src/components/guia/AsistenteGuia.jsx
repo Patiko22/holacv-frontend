@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import CargaCVInicial from "./CargaCVInicial";
 
+const BASE_URL = "https://holacv-backend.onrender.com";
+
 export default function AsistenteGuia() {
   const [input, setInput] = useState("");
   const [mensajes, setMensajes] = useState([]);
@@ -18,10 +20,10 @@ export default function AsistenteGuia() {
   useEffect(() => {
     const verificarYClonar = async () => {
       try {
-        const { data: config } = await axios.get(`http://localhost:3000/data/${uid}/usuario124_config.json`);
-        const yaExiste = await axios.get(`http://localhost:3000/data/${uid}/asistentes.json`).then(() => true).catch(() => false);
+        const { data: config } = await axios.get(`${BASE_URL}/data/${uid}/usuario124_config.json`);
+        const yaExiste = await axios.get(`${BASE_URL}/data/${uid}/asistentes.json`).then(() => true).catch(() => false);
         if (!yaExiste && config?.nombre) {
-          await axios.post("http://localhost:3000/clonar-asistentes", { uid, nombreUsuario: config.nombre });
+          await axios.post(`${BASE_URL}/clonar-asistentes`, { uid, nombreUsuario: config.nombre });
         }
       } catch (err) {
         console.warn("⚠️ Error en verificación inicial:", err);
@@ -49,7 +51,7 @@ export default function AsistenteGuia() {
     setCargando(true);
 
     try {
-      const { data } = await axios.post("http://localhost:3000/consultar-guia", {
+      const { data } = await axios.post(`${BASE_URL}/consultar-guia`, {
         uid,
         pregunta: mensaje,
       });
@@ -60,7 +62,7 @@ export default function AsistenteGuia() {
         const etapaDetectada = Object.keys(JSON.parse(jsonStr))[0];
         if (etapaDetectada) setEtapaActual(etapaDetectada);
 
-        await axios.post("http://localhost:3000/guardar-etapa", {
+        await axios.post(`${BASE_URL}/guardar-etapa`, {
           uid,
           datos: JSON.parse(jsonStr),
         });
