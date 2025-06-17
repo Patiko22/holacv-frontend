@@ -2,34 +2,36 @@ import React, { useEffect } from "react";
 import axios from "axios";
 import { Button } from "@/components/ui/button";
 
+const API = import.meta.env.VITE_BACKEND_URL || "http://localhost:3000";
+
 export default function RegistroPersona() {
   const handleLoginSuccess = async (response) => {
     try {
       const jwt = response.credential;
       const decoded = JSON.parse(atob(jwt.split(".")[1]));
-  
+
       const uid = decoded.sub;
       const nombre = decoded.given_name || decoded.name || "Usuario";
       const email = decoded.email;
-  
+
       const payload = {
         uid,
         nombre,
         email,
         tipoUsuario: "persona"
       };
-  
-      console.log("Payload enviado al backend:", payload); // <-- movido aquí correctamente
-  
-      await axios.post("https://holacv-backend.onrender.com/configurar-bot", payload);
-  
+
+      console.log("Payload enviado al backend:", payload);
+
+      await axios.post(`${API}/configurar-bot`, payload);
+
       localStorage.setItem("uid", uid);
       window.location.href = "/guia";
     } catch (error) {
       console.error("❌ Error al registrar usuario:", error);
     }
   };
- 
+
   useEffect(() => {
     if (window.google && window.google.accounts) {
       window.google.accounts.id.initialize({
