@@ -15,70 +15,61 @@ export default function AsistenteGuia() {
   const yaSaludo = useRef(false);
   const chatRef = useRef(null);
 
-  const uid = "usuario124";
+  const uid = localStorage.getItem("uid");
 
-  useEffect(() => {
-    const verificarYClonar = async () => {
-      try {
-        const { data: config } = await axios.get(`${BASE_URL}/data/${uid}/usuario124_config.json`);
-        const yaExiste = await axios.get(`${BASE_URL}/data/${uid}/asistentes.json`).then(() => true).catch(() => false);
-        if (!yaExiste && config?.nombre) {
-          await axios.post(`${BASE_URL}/clonar-asistentes`, { uid, nombreUsuario: config.nombre });
-        }
-      } catch (err) {
-        console.warn("⚠️ Error en verificación inicial:", err);
-      }
-    };
-    verificarYClonar();
-  }, []);
-
-  useEffect(() => {
-    if (mostrarAsistente && !yaSaludo.current) {
-      yaSaludo.current = true;
-      enviarMensaje("Hola! Te voy a ayudar a crear tu perfil profesional paso a paso. ¿Qué estilo de comunicación preferís? Formal, relajado o motivacional?");
-    }
-  }, [mostrarAsistente]);
-
-  useEffect(() => {
-    if (chatRef.current) {
-      chatRef.current.scrollTop = chatRef.current.scrollHeight;
-    }
-  }, [mensajes]);
-
-  const enviarMensaje = async (mensaje) => {
-    const nuevoMensaje = { role: "user", content: mensaje };
-    setMensajes((prev) => [...prev, nuevoMensaje]);
-    setCargando(true);
-
+useEffect(() => {
+  const verificarYClonar = async () => {
     try {
-      const { data } = await axios.post(`${BASE_URL}/consultar-guia`, {
-        uid,
-        pregunta: mensaje,
-      });
-
-      const match = data.respuesta.match(/```json\n([\s\S]*?)\n```/);
-      if (match) {
-        const jsonStr = match[1];
-        const etapaDetectada = Object.keys(JSON.parse(jsonStr))[0];
-        if (etapaDetectada) setEtapaActual(etapaDetectada);
-
-        await axios.post(`${BASE_URL}/guardar-etapa`, {
-          uid,
-          datos: JSON.parse(jsonStr),
-        });
+      const { data: config } = await axios.get(`${BASE_URL}/data/${uid}/configUsuario.json`);
+      const yaExiste = await axios.get(`${BASE_URL}/data/${uid}/asistentes.json`).then(() => true).catch(() => false);
+      if (!yaExiste && config?.nombre) {
+        await axios.post(`${BASE_URL}/clonar-asistentes`, { uid, nombreUsuario: config.nombre });
       }
-
-      setMensajes((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
-    } catch (error) {
-      setMensajes((prev) => [
-        ...prev,
-        { role: "assistant", content: "⚠️ Error al consultar al asistente guía." },
-      ]);
-    } finally {
-      setCargando(false);
-      setInput("");
+    } catch (err) {
+      console.warn("⚠️ Error en verificación inicial:", err);
     }
   };
+  verificarYClonar();
+}, []);
+
+const enviarMensaje = async (mensaje) => {
+  const nuevoMensaje = { role: "user", content: mensaje };
+  setMensajes((prev) => [...prev, nuevoMensaje]);
+  setCargando(true);
+
+  try {
+    console.log("📤 Payload enviado a consultar-guia:", { uid, pregunta: mensaje });
+    const { data } = await axios.post(`${BASE_URL}/consultar-guia`, {
+      uid,
+      pregunta: mensaje,
+    });
+
+    console.log("📥 Respuesta del backend:", data.respuesta);
+
+    const match = data.respuesta.match(/```json\n([\s\S]*?)\n```/);
+    if (match) {
+      const jsonStr = match[1];
+      const etapaDetectada = Object.keys(JSON.parse(jsonStr))[0];
+      if (etapaDetectada) setEtapaActual(etapaDetectada);
+
+      await axios.post(`${BASE_URL}/guardar-etapa`, {
+        uid,
+        datos: JSON.parse(jsonStr),
+      });
+    }
+
+    setMensajes((prev) => [...prev, { role: "assistant", content: data.respuesta }]);
+  } catch (error) {
+    console.error("❌ Error al consultar al asistente guía:", error);
+    setMensajes((prev) => [
+      ...prev,
+      { role: "assistant", content: "⚠️ Error al consultar al asistente guía." },
+    ]);
+  } finally {
+    setCargando(false);
+    setInput("");
+  }
+};
 
   const handleSubmit = (e) => {
     e.preventDefault();
