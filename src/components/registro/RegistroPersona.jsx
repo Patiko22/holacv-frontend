@@ -10,21 +10,24 @@ export default function RegistroPersona() {
       const jwt = response.credential;
       const decoded = JSON.parse(atob(jwt.split(".")[1]));
 
-      const uid = decoded.sub;
+      // Validar y asignar UID
+      const uid = decoded.sub || decoded.name || "usuario_generico";
       const nombre = decoded.given_name || decoded.name || "Usuario";
       const email = decoded.email;
 
+      // Crear el payload para enviar al backend
       const payload = {
         uid,
         nombre,
-        email,
-        tipoUsuario: "persona"
+        email
       };
 
-      console.log("Payload enviado al backend:", payload);
+      console.log("📤 Payload enviado al backend:", payload);
 
+      // Enviar el payload al backend
       await axios.post(`${API}/configurar-bot`, payload);
 
+      // Guardar UID en localStorage y redirigir al usuario
       localStorage.setItem("uid", uid);
       window.location.href = "/guia";
     } catch (error) {
