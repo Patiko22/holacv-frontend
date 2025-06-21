@@ -8,25 +8,37 @@ export default function RegistroPersona() {
   const handleLoginSuccess = async (response) => {
     try {
       const jwt = response.credential;
+  
+      // Validar el formato del JWT
+      if (!jwt || jwt.split(".").length < 3) {
+        console.error("❌ El JWT no tiene un formato válido.");
+        return;
+      }
+  
       const decoded = JSON.parse(atob(jwt.split(".")[1]));
-
-      // Validar y asignar UID
-      const uid = decoded.sub || decoded.name || "usuario_generico";
+  
+      // Validar y asignar UID, nombre y email
+      const uid = decoded.sub || "usuario_generico";
       const nombre = decoded.given_name || decoded.name || "Usuario";
-      const email = decoded.email;
-
+      const email = decoded.email || "email_no_disponible";
+  
+      if (!email) {
+        console.error("❌ El JWT no contiene un email válido.");
+        return;
+      }
+  
       // Crear el payload para enviar al backend
       const payload = {
         uid,
         nombre,
         email
       };
-
+  
       console.log("📤 Payload enviado al backend:", payload);
-
+  
       // Enviar el payload al backend
       await axios.post(`${API}/configurar-bot`, payload);
-
+  
       // Guardar UID en localStorage y redirigir al usuario
       localStorage.setItem("uid", uid);
       window.location.href = "/guia";
@@ -34,7 +46,7 @@ export default function RegistroPersona() {
       console.error("❌ Error al registrar usuario:", error);
     }
   };
-
+  
   useEffect(() => {
     if (window.google && window.google.accounts) {
       window.google.accounts.id.initialize({
