@@ -22,7 +22,7 @@ export default function AsistenteGuia() {
     const verificarYClonar = async () => {
       try {
         const { data: config } = await axios.get(`${BASE_URL}/data/${uid}/configUsuario.json`);
-        const yaExiste = await axios.get(`${BASE_URL}/data/${uid}/asistentes.json`).then(() => true).catch(() => false);
+        const yaExiste = await axios.get(`${BASE_URL}/data/asistentes.json`).then(() => true).catch(() => false);
         if (!yaExiste && config?.nombre) {
           await axios.post(`${BASE_URL}/clonar-asistentes`, { uid, nombreUsuario: config.nombre });
         }
