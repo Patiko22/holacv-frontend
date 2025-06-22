@@ -10,21 +10,28 @@ export default function CargaCVInicial({ onFinalizar }) {
   const [linkedin, setLinkedin] = useState("");
   const [pdf, setPdf] = useState(null);
 
-  const uid = "usuario124";
+  // Obtener UID dinámicamente desde localStorage
+  const uid = localStorage.getItem("uid") || "usuario_generico";
 
   useEffect(() => {
-    axios.get(`${BASE_URL}/data/${uid}/${uid}_config.json`)
-      .then(() => setCvCargado(true))
-      .catch(() => setCvCargado(false));
+    const verificarConfigUsuario = async () => {
+      try {
+        const { data } = await axios.get(`${BASE_URL}/configUsuario/${uid}`);
+        setCvCargado(true);
+      } catch (err) {
+        setCvCargado(false);
+      }
+    };
+    verificarConfigUsuario();
   }, []);
 
   const handleGuardarLinkedin = async () => {
     if (!linkedin.trim()) return;
 
     try {
-      await axios.post(`${BASE_URL}/subir-experiencia`, {
+      await axios.post(`${BASE_URL}/guardar-linkedin`, {
         uid,
-        textoExtraido: `LinkedIn: ${linkedin}`
+        textoExtraido: `LinkedIn: ${linkedin}`,
       });
       setCvCargado(true);
       onFinalizar();
@@ -41,8 +48,8 @@ export default function CargaCVInicial({ onFinalizar }) {
       formData.append("cv", pdf);
       formData.append("uid", uid);
 
-      await axios.post(`${BASE_URL}/subir-experiencia`, formData, {
-        headers: { "Content-Type": "multipart/form-data" }
+      await axios.post(`${BASE_URL}/subir-cv`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       setCvCargado(true);
