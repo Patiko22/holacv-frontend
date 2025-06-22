@@ -52,7 +52,7 @@ export default function AsistenteGuia() {
     setCargando(true);
 
     try {
-      const { data } = await axios.post(`${BASE_URL}/consultar-guia`, {
+      const { data } = await axios.post(`${BASE_URL}/guia`, {
         uid,
         pregunta: mensaje,
       });
